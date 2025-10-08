@@ -1,0 +1,23 @@
+{
+  "name": "rose",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "vite"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "vite": "^7.1.7"
+  },
+  "dependencies": {
+    "@babylonjs/core": "^8.29.0",
+    "@babylonjs/inspector": "^8.29.0",
+    "@babylonjs/loaders": "^8.29.0",
+    "install": "^0.13.0",
+    "npm": "^11.6.1"
+  }
+}
