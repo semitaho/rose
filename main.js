@@ -25,10 +25,9 @@ import { registerBuiltInLoaders } from "@babylonjs/loaders/dynamic";
 registerBuiltInLoaders();
 
 import { Inspector } from "@babylonjs/inspector";
-import { createCat, createQuizmallows } from "./characters.ts";
+import { createCat, createPlayer } from "./characters.ts";
 import { createEnvironmentObjects, createSurface } from "./environment.ts";
-import { flapEyes, flapMouth, flapWings } from "./animations.ts";
-import { getChildMeshByNameUnique } from "./util";
+;
 import {
   createDefaultCamera,
   createDefaultLight,
@@ -44,7 +43,7 @@ const scene = createScene(engine);
 const light = createDefaultLight(scene);
 // Shadow generator with map size (e.g. 1024)
 const shadowGenerator = createShadowGenerator(light);
-const quizmallows = createQuizmallows(scene);
+const quizmallows = createPlayer(scene);
 //new GUIDialog().showMessageBox("Hi! I'm Cat!");
 shadowGenerator.addShadowCaster(quizmallows);
 createSurface(scene);

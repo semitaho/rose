@@ -1,5 +1,7 @@
 import {
   AbstractMesh,
+  Color3,
+  Curve3,
   ImportMeshAsync,
   Mesh,
   MeshBuilder,
@@ -8,14 +10,15 @@ import {
   Vector3,
 } from "@babylonjs/core";
 import { DEEPER_BLUE, LIGHT_BLUE } from "./colors";
-import { createGrassMaterial } from "./materials";
+import { createGrassMaterial, createMaterial, createRoadMaterial } from "./materials";
 import { SkyMaterial } from "@babylonjs/materials";
 import { createCat } from "./characters";
 import { getChildMeshByNameUnique } from "./util.ts";
 import { flapEyes, flapMouth } from "./animations";
+import { createNiceTexture, createTexture } from "./textures.ts";
 
 export function createSurface(scene: Scene) {
-  const ground = MeshBuilder.CreateGround("ground", { width: 40, height: 40 });
+  const ground = MeshBuilder.CreateGround("ground", { width: 70, height: 70 });
 
   ground.material = createGrassMaterial(scene);
   ground.receiveShadows = true;
@@ -37,15 +40,52 @@ export function createSurface(scene: Scene) {
 
 async function createHountedHouse(scene: Scene): Promise<AbstractMesh> {
   const result = await ImportMeshAsync("/meshes/haunted_house.glb", scene);
-  const house = result.meshes[1];
+  const house = result.meshes[0];
+  house.scaling = new Vector3(20, 20, 20);
+  house.checkCollisions = true;
   return house;
 }
 
+function createRoad(scene: Scene) {
+  const path = [
+    new Vector3(0, 0, 0),
+    new Vector3(10, 0, 5),
+    new Vector3(20, 0, 0),
+    new Vector3(30, 0, -10),
+  ];
+
+  const smoothPath = Curve3.CreateCatmullRomSpline(path, 20, false);
+
+  const roadShape = [
+    new Vector3(-1.5, 0, 0), // left edge
+    new Vector3(1.5, 0, 0), // right edge
+  ];
+
+  const road = MeshBuilder.ExtrudeShape(
+    "road",
+    {
+      shape: roadShape,
+      path: smoothPath.getPoints(),
+      sideOrientation: Mesh.DOUBLESIDE,
+    },
+    scene
+  );
+
+  road.position.y = 0.01;
+  const roadTexture = createTexture("/textures/road.jpg");
+  roadTexture.uScale = 1;
+  roadTexture.vScale = 3;
+
+  road.material = createRoadMaterial(scene, roadTexture);
+}
+
 export async function createEnvironmentObjects(scene: Scene) {
+  await createRoad(scene);
   const house = await createHountedHouse(scene);
   house.position = new Vector3(-5, 0, -5);
-  house.scaling = new Vector3(20, 20, 20);
-  house.checkCollisions = true;
+
+  const house2 = await createHountedHouse(scene);
+  house2.position = new Vector3(10, 0, 10);
 
   // cat
   const cat = createCat(scene);

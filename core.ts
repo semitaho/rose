@@ -24,7 +24,7 @@ export function createScene(engine: Engine): Scene {
 
 export function createDefaultLight(scene: Scene): Light {
   const light = new DirectionalLight("light", new Vector3(-1, -1, -1), scene);
-  light.intensity = 0.7;
+  light.intensity = 0.9;
   light.position = new Vector3(20, 70, 20);
   light.shadowEnabled = true;
   return light;
@@ -49,6 +49,7 @@ export function createDefaultCamera(scene: Scene, target: Mesh): Camera {
     scene
   );
   camera.lockedTarget = target;
-  camera.detachControl();
+  camera.attachControl(true);
+   camera.detachControl();
   return camera;
 }
