@@ -47,8 +47,10 @@ export function createPlayer(scene: Scene) {
   quizmallows.addChild(wing1);
   quizmallows.addChild(wing2);
 
-  const yellowMat = createMaterial("yellowMat", scene,  toColor(184, 199, 23)); // pure yellow (R=1, G=1, B=0)
-  quizmallows.material = yellowMat;
+  const playerMat = createMaterial("playerMat", scene, Color3.Yellow()); // pure yellow (R=1, G=1, B=0)
+  playerMat.baseWeight = 0.1;
+  quizmallows.material = playerMat;
+  
   quizmallows.position.y = 0.6;
   quizmallows.position.z = 1.0;
   quizmallows.position.x = 5.0;

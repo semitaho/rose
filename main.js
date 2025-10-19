@@ -26,7 +26,7 @@ registerBuiltInLoaders();
 
 import { Inspector } from "@babylonjs/inspector";
 import { createCat, createPlayer } from "./characters.ts";
-import { createEnvironmentObjects, createSurface } from "./environment.ts";
+import { createEnvironmentObjects, createSky } from "./environment.ts";
 ;
 import {
   createDefaultCamera,
@@ -36,17 +36,23 @@ import {
   createShadowGenerator,
 } from "./core.ts";
 import { _updateFromKeyboard, checkJump, checkRotation, move, updatePlayerKeyboard } from "./player.ts";
+import { createSunLight } from "./lightning.ts";
+import { createEnvTexture } from "./textures.ts";
 
 const engine = createEngine();
 const scene = createScene(engine);
+const envTexture = createEnvTexture(scene);
+scene.environmentTexture = envTexture;
+scene.environmentIntensity =0.4;
+scene.imageProcessingConfiguration.exposure = 1.5
 // Light
-const light = createDefaultLight(scene);
+const sun = createSunLight(scene);
 // Shadow generator with map size (e.g. 1024)
-const shadowGenerator = createShadowGenerator(light);
+const shadowGenerator = createShadowGenerator(sun);
 const quizmallows = createPlayer(scene);
 //new GUIDialog().showMessageBox("Hi! I'm Cat!");
-shadowGenerator.addShadowCaster(quizmallows);
-createSurface(scene);
+shadowGenerator.addShadowCaster(quizmallows, true);
+createSky(scene);
 createEnvironmentObjects(scene);
 // Camera
 createDefaultCamera(scene, quizmallows);

@@ -1,6 +1,8 @@
 import {
   ArcRotateCamera,
   Camera,
+  Color3,
+  Color4,
   DirectionalLight,
   Engine,
   IShadowLight,
@@ -19,6 +21,8 @@ export function createEngine(): Engine {
 
 export function createScene(engine: Engine): Scene {
   const scene = new Scene(engine, {});
+  //scene.clearColor = new Color4(0.6, 0.8, 1.0, 1.0); // soft blue sky
+
   return scene;
 }
 
@@ -31,9 +35,9 @@ export function createDefaultLight(scene: Scene): Light {
 }
 
 export function createShadowGenerator(light: IShadowLight): ShadowGenerator {
-  const shadowGenerator = new ShadowGenerator(256, light);
-  shadowGenerator.useBlurExponentialShadowMap = true;
-  shadowGenerator.blurKernel = 32;
+  const shadowGenerator = new ShadowGenerator(2048, light);
+  shadowGenerator.useExponentialShadowMap = true;
+  shadowGenerator.useContactHardeningShadow = true;
   shadowGenerator.usePoissonSampling = true;
   return shadowGenerator;
 }
@@ -44,12 +48,12 @@ export function createDefaultCamera(scene: Scene, target: Mesh): Camera {
     "camera",
     Math.PI / 2,
     Math.PI / 3,
-    10,
+    20,
     target.position,
     scene
   );
   camera.lockedTarget = target;
   camera.attachControl(true);
-   camera.detachControl();
+  camera.detachControl();
   return camera;
 }

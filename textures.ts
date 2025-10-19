@@ -1,4 +1,4 @@
-import { DynamicTexture, Scene, Texture } from "@babylonjs/core";
+import { CubeTexture, DynamicTexture, Scene, Texture } from "@babylonjs/core";
 
 export function createNiceTexture(scene: Scene): DynamicTexture {
   const texture = new DynamicTexture(
@@ -12,8 +12,8 @@ export function createNiceTexture(scene: Scene): DynamicTexture {
 
   // Draw an arc at the bottom
   const centerX = textureSize / 2;
-  const centerY = textureSize -  textureSize / 14;  // bottom of the texture
-  const radius =  textureSize / 4;
+  const centerY = textureSize - textureSize / 14; // bottom of the texture
+  const radius = textureSize / 4;
   ctx.fillStyle = "white";
   ctx.fillRect(0, 0, textureSize, textureSize);
 
@@ -23,11 +23,11 @@ export function createNiceTexture(scene: Scene): DynamicTexture {
     centerX, // x center
     centerY, // y center (bottom)
     radius, // radius
-   Math.PI, // start angle (left side)
+    Math.PI, // start angle (left side)
     0 // end angle (right side)
   );
- // ctx.lineTo(centerX+ radius, 0); // close the bottom edge
- // ctx.lineTo(centerX - radius, 0);
+  // ctx.lineTo(centerX+ radius, 0); // close the bottom edge
+  // ctx.lineTo(centerX - radius, 0);
   ctx.closePath();
 
   // Fill with yellow
@@ -40,4 +40,13 @@ export function createNiceTexture(scene: Scene): DynamicTexture {
 export function createTexture(path: string): Texture {
   const texture = new Texture(path);
   return texture;
+}
+
+export function createEnvTexture(scene: Scene): CubeTexture {
+  // Load a default environment texture
+  const envTex = CubeTexture.CreateFromPrefilteredData(
+    "https://assets.babylonjs.com/environments/environmentSpecular.env",
+    scene
+  );
+  return envTex;
 }

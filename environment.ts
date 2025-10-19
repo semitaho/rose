@@ -2,7 +2,9 @@ import {
   AbstractMesh,
   Color3,
   Curve3,
+  GlowLayer,
   ImportMeshAsync,
+  Material,
   Mesh,
   MeshBuilder,
   Scene,
@@ -10,32 +12,52 @@ import {
   Vector3,
 } from "@babylonjs/core";
 import { DEEPER_BLUE, LIGHT_BLUE } from "./colors";
-import { createGrassMaterial, createMaterial, createRoadMaterial } from "./materials";
+import {
+  createGrassMaterial,
+  createMaterial,
+  createRoadMaterial,
+  createSkyMaterial,
+} from "./materials";
 import { SkyMaterial } from "@babylonjs/materials";
 import { createCat } from "./characters";
 import { getChildMeshByNameUnique } from "./util.ts";
 import { flapEyes, flapMouth } from "./animations";
 import { createNiceTexture, createTexture } from "./textures.ts";
 
-export function createSurface(scene: Scene) {
+function createSurface(scene: Scene) {
   const ground = MeshBuilder.CreateGround("ground", { width: 70, height: 70 });
-
   ground.material = createGrassMaterial(scene);
   ground.receiveShadows = true;
+}
 
-  const skybox = MeshBuilder.CreateSphere(
-    "skyBox",
-    { segments: 32, diameter: 1000 },
-    scene
-  );
+export function createSky(scene: Scene): Mesh {
+  const skybox = MeshBuilder.CreateBox("skyBox", { size: 1000 }, scene);
   skybox.isPickable = false;
   skybox.infiniteDistance = true;
+  const skyMaterial = createSkyMaterial(scene);
   // Material
-  const skyMaterial = new SkyMaterial("skyMaterial", scene);
-
-  skyMaterial.backFaceCulling = false;
-  // Gradient colors
   skybox.material = skyMaterial;
+  createSunMesh(skyMaterial, scene);
+  return skybox;
+}
+
+function createSunMesh(skyMaterial: SkyMaterial, scene: Scene) {
+  const sunMesh = MeshBuilder.CreateSphere("sun", { diameter: 10 }, scene);
+  sunMesh.alwaysSelectAsActiveMesh = true;
+  sunMesh.receiveShadows = false;
+  const sunPosition = skyMaterial.sunPosition.clone();
+  sunMesh.position = sunPosition.scale(30); // scale out to far away
+
+  const sunMat = new StandardMaterial("sunMat", scene);
+  sunMat.emissiveColor = new Color3(1, 0.95, 0.8); // bright yellow-white
+  sunMat.disableLighting = true;
+  sunMesh.material = sunMat;
+
+  sunMesh.position.z *= 10;
+  // 3. Optional: Glow layer
+  const glowLayer = new GlowLayer("glow", scene);
+  glowLayer.addIncludedOnlyMesh(sunMesh);
+  glowLayer.intensity = 0.8;
 }
 
 async function createHountedHouse(scene: Scene): Promise<AbstractMesh> {
@@ -46,7 +68,15 @@ async function createHountedHouse(scene: Scene): Promise<AbstractMesh> {
   return house;
 }
 
-function createRoad(scene: Scene) {
+async function createTree(scene: Scene): Promise<AbstractMesh> {
+  const result = await ImportMeshAsync("/meshes/tree.babylon", scene);
+  const tree = result.meshes[0];
+  tree.scaling = new Vector3(20, 15, 20);
+  tree.checkCollisions = true;
+  return tree;
+}
+
+function createRoad(scene: Scene): Mesh {
   const path = [
     new Vector3(0, 0, 0),
     new Vector3(10, 0, 5),
@@ -77,16 +107,23 @@ function createRoad(scene: Scene) {
   roadTexture.vScale = 3;
 
   road.material = createRoadMaterial(scene, roadTexture);
+  road.receiveShadows = true;
+  return road;
 }
 
 export async function createEnvironmentObjects(scene: Scene) {
+  createSurface(scene);
   await createRoad(scene);
   const house = await createHountedHouse(scene);
   house.position = new Vector3(-5, 0, -5);
-
   const house2 = await createHountedHouse(scene);
+
   house2.position = new Vector3(10, 0, 10);
 
+  // trees
+  const tree1 = await createTree(scene);
+  const tree2 = await createTree(scene);
+  tree2.position = new Vector3(10,0,0);
   // cat
   const cat = createCat(scene);
   cat.position.y = 0.6;
