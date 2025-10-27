@@ -49,24 +49,24 @@ scene.imageProcessingConfiguration.exposure = 1.5
 const sun = createSunLight(scene);
 // Shadow generator with map size (e.g. 1024)
 const shadowGenerator = createShadowGenerator(sun);
-const quizmallows = createPlayer(scene);
-//new GUIDialog().showMessageBox("Hi! I'm Cat!");
-shadowGenerator.addShadowCaster(quizmallows, true);
 createSky(scene);
-createEnvironmentObjects(scene);
+const [ groundMesh ] =  await createEnvironmentObjects(scene);
+const player = createPlayer(scene, groundMesh);
+shadowGenerator.addShadowCaster(player, true);
+
 // Camera
-createDefaultCamera(scene, quizmallows);
+createDefaultCamera(scene, player);
 
 scene.onKeyboardObservable.add((kbInfo) => {
-  updatePlayerKeyboard(quizmallows, kbInfo);
+  updatePlayerKeyboard(player, kbInfo);
 });
 
 scene.onBeforeRenderObservable.add(() => {
   _updateFromKeyboard();
   const deltaTimeInSeconds = engine.getDeltaTime() / 1000;
-  move(quizmallows, deltaTimeInSeconds);
-  checkJump(quizmallows, deltaTimeInSeconds);
-  checkRotation(quizmallows, deltaTimeInSeconds);
+  move(player, deltaTimeInSeconds);
+  checkJump(player, deltaTimeInSeconds);
+  checkRotation(player, deltaTimeInSeconds);
 });
 
 

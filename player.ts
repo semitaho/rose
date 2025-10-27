@@ -81,7 +81,9 @@ export function _updateFromKeyboard() {
 }
 
 export function move(player: Mesh, deltaTimeInSeconds: number): void {
-  player.moveWithCollisions(_moveDirection.scale(deltaTimeInSeconds * speed));
+  let oldPos = player.position.clone();
+  player.moveWithCollisions(_moveDirection.scale(deltaTimeInSeconds * speed), false);
+
 }
 
 export function checkJump(player: Mesh, deltaTimeInSeconds: number): void {

@@ -8,6 +8,8 @@ import {
   IShadowLight,
   Light,
   Mesh,
+  MeshBuilder,
+  Node,
   Scene,
   ShadowGenerator,
   Vector3,
@@ -21,9 +23,58 @@ export function createEngine(): Engine {
 
 export function createScene(engine: Engine): Scene {
   const scene = new Scene(engine, {});
+  scene.collisionsEnabled = true;
   //scene.clearColor = new Color4(0.6, 0.8, 1.0, 1.0); // soft blue sky
 
   return scene;
+}
+
+export function enableCollisions(node: Node) {
+  console.log("enabling collisioons", node.name);
+  if (node instanceof Mesh) {
+    node.checkCollisions = true;
+  }
+  if (node.getChildren().length > 0) {
+    node.getChildren().forEach((childMesh: Node) => {
+      enableCollisions(childMesh);
+    });
+  }
+}
+
+export function createCollisionBox(mesh: Mesh, sizeVector: Vector3,  scene: Scene): void {
+    const sizeX =sizeVector.x  *  mesh.scaling.x;
+  const sizeY = sizeVector.y * mesh.scaling.y;
+  const sizeZ = sizeVector.z * mesh.scaling.z;
+  const collisionBox = MeshBuilder.CreateBox(
+    mesh.name + "Collision",
+    { width: sizeX, height: sizeY, depth: sizeZ },
+    scene
+  );
+  collisionBox.position = mesh.position.clone();
+  collisionBox.isVisible = false; // invisible
+  collisionBox.checkCollisions = true;
+}
+
+function getMeshSize(mesh: Mesh) {
+    const bb = mesh.getBoundingInfo().boundingBox;
+  console.log('bounding info:', bb);
+
+    return new Vector3(
+        (bb.maximum.x - bb.minimum.x),
+        (bb.maximum.y - bb.minimum.y),
+        (bb.maximum.z - bb.minimum.z)
+    );
+}
+
+export function enableEllipsoidScale(node: Node, scaleFactor: number) {
+  if (node instanceof Mesh) {
+    node.ellipsoid = node.ellipsoid.scale(scaleFactor);
+  }
+  if (node.getChildren().length > 0) {
+    node.getChildren().forEach((childMesh: Node) => {
+      enableEllipsoidScale(childMesh, scaleFactor);
+    });
+  }
 }
 
 export function createDefaultLight(scene: Scene): Light {
@@ -47,7 +98,7 @@ export function createDefaultCamera(scene: Scene, target: Mesh): Camera {
   const camera = new ArcRotateCamera(
     "camera",
     Math.PI / 2,
-    Math.PI / 3,
+    Math.PI / 2.5,
     20,
     target.position,
     scene
