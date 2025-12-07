@@ -1,6 +1,5 @@
 import { Animation, Mesh } from "@babylonjs/core";
 
-
 const DEFAUT_FRAME_RATE = 30;
 export function flapEyes() {
   const animation = new Animation(
@@ -23,7 +22,6 @@ export function flapEyes() {
   animation.setKeys(keys);
   return animation;
 }
-
 
 export function flapMouth() {
   const animation = new Animation(
@@ -51,4 +49,25 @@ export function flapWings(wing1: Mesh, wing2: Mesh): void {
   const flap = Math.sin(t) * 0.5;
   wing1.rotation.x = flap;
   wing2.rotation.x = flap;
+}
+
+export function blink(): Animation {
+  const animation = new Animation(
+    "blinkAnimation",
+    "material.alpha",
+    DEFAUT_FRAME_RATE * 2,
+    Animation.ANIMATIONTYPE_FLOAT,
+    Animation.ANIMATIONLOOPMODE_CYCLE
+  );
+  const keys = [
+    { frame: 0, value: 1 },
+    { frame: 10, value: 0 }, // invisible
+    { frame: 20, value: 1 }, // visible again
+    { frame: 30, value: 0 }, // visible again
+    { frame: 40, value: 1 }, // visible again
+    { frame: 50, value: 0 }, // visible again
+    { frame: 60, value: 1 }, // visible again
+  ];
+  animation.setKeys(keys);
+  return animation;
 }

@@ -15,29 +15,25 @@ import {
   SubMesh,
   Vector3,
 } from "@babylonjs/core";
-import { DEEPER_BLUE, LIGHT_BLUE } from "./colors";
 import {
   createGrassMaterial,
   createMaterial,
   createRoadMaterial,
   createSkyMaterial,
-} from "./materials";
+} from "./materials.js";
 import { SkyMaterial } from "@babylonjs/materials";
-import { createCat } from "./characters";
-import { getChildMeshByNameUnique, randomIntFromInterval } from "./util.ts";
-import { flapEyes, flapMouth } from "./animations";
-import { createNiceTexture, createTexture } from "./textures.ts";
-import {
-  createCollisionBox,
-  enableCollisions,
-  enableEllipsoidScale,
-} from "./core.ts";
+import { createCat } from "./characters.js";
+import { getChildMeshByNameUnique, randomIntFromInterval } from "./util.js";
+import { flapEyes, flapMouth } from "./animations.js";
+import { createNiceTexture, createTexture } from "./textures.js";
+import { createCollisionBox, enableEllipsoidScale } from "./core.js";
+import {  type Environment } from "./types.js";
 
 function createSurface(scene: Scene): GroundMesh {
   const ground = MeshBuilder.CreateGround("ground", { width: 70, height: 70 });
   ground.material = createGrassMaterial(scene);
   ground.receiveShadows = true;
-  ground.checkCollisions = true;
+  ground.checkCollisions = false;
   return ground;
 }
 
@@ -107,6 +103,12 @@ async function createTree(
   return tree;
 }
 
+function getRoadXLoc(roadMesh: Mesh): number {
+  const roadBoundingBox = roadMesh.getBoundingInfo().boundingBox;
+  const roadX = roadBoundingBox.maximumWorld.x;
+  return roadX;
+}
+
 function createRoad(scene: Scene, ground: Mesh): Mesh {
   const boundingBox = ground.getBoundingInfo().boundingBox;
 
@@ -145,23 +147,57 @@ function createRoad(scene: Scene, ground: Mesh): Mesh {
 
   road.material = createRoadMaterial(scene, roadTexture);
   road.receiveShadows = true;
+  createRoadCollisions(road, scene);
   return road;
 }
 
-export async function createEnvironmentObjects(scene: Scene): Promise<Mesh[]> {
+function createRoadCollisions(road: Mesh, scene: Scene): void {
+  //road.checkCollisions = true;
+  const boundingBox = road.getBoundingInfo().boundingBox;
+
+  const width = boundingBox.maximum.x - boundingBox.minimum.x;
+  const length = boundingBox.maximum.z - boundingBox.minimum.z;
+
+  const collisionBox = createCollisionBox(road, new Vector3(width, 10, length), scene);
+  collisionBox.position.z = 0;
+  collisionBox.isVisible = false;
+
+}
+
+export function createStone(scene: Scene, road: Mesh): Mesh {
+  // Stone (sphere)
+  const stone = MeshBuilder.CreateSphere("stone", { diameter: 1 }, scene);
+  stone.position.y = 0.5;
+  stone.position.x = getRoadXLoc(road) - 2;
+  stone.position.z = -10;
+  const material = createMaterial("stoneMat", scene);
+  const texture = createTexture("/textures/rock.png");
+  texture.uScale = 2;
+  material.albedoTexture = texture;
+  material.metallic = 0;
+  material.baseWeight = 1;
+  //material.bumpTexture.invertZ = true;
+  //material.bumpTexture= texture;
+  //material.roughness = 1.0;
+
+  stone.material = material;
+  return stone;
+}
+
+export async function createEnvironmentObjects(scene: Scene): Promise<Environment> {
   const ground = createSurface(scene);
   const road = await createRoad(scene, ground);
-  const house = await createHountedHouse(scene, road, new Vector3(-5, 0, -5));
-  const house2 = await createHountedHouse(scene, road, new Vector3(10, 0, 10));
+  await createHountedHouse(scene, road, new Vector3(-5, 0, -5));
+  await createHountedHouse(scene, road, new Vector3(10, 0, 10));
+  const stone = createStone(scene, road);
 
   const amountOfTrees = 10;
 
-  const treeIndices = new Set<number>();
   // trees
   for (let num = 1; num < amountOfTrees; num++) {
     let treeAreaZ = -30 + num * 7;
-    const yScaling = randomIntFromInterval(15,20);
-    const tree = await createTree(scene, road, treeAreaZ, yScaling);
+    const yScaling = randomIntFromInterval(15, 20);
+    await createTree(scene, road, treeAreaZ, yScaling);
   }
   // cat
   const cat = createCat(scene);
@@ -169,18 +205,21 @@ export async function createEnvironmentObjects(scene: Scene): Promise<Mesh[]> {
   cat.position.z = -1.0;
   cat.position.x = -4.0;
 
-  const catMouth = getChildMeshByNameUnique(cat, "catMouth");
+  const catMouth = getChildMeshByNameUnique(cat, "catMouth")!;
   const flatMouthAnim = flapMouth();
   catMouth.animations = [flatMouthAnim];
 
   scene.beginAnimation(catMouth, 0, 60, true, 0.8);
   console.log("catMouth", catMouth);
-  const eye1 = cat.getChildMeshes(false, (m) => m.name === "catEye")[0];
+  const eye1 = cat.getChildMeshes(false, (m: any) => m.name === "catEye")[0]!;
   eye1.animations = [flapEyes()];
   scene.beginAnimation(eye1, 0, 60, true, 0.7);
-  const eye2 = cat.getChildMeshes(false, (m) => m.name === "catEye")[1];
+  const eye2 = cat.getChildMeshes(false, (m: any) => m.name === "catEye")[1]!;
   eye2.animations = [flapEyes()];
   scene.beginAnimation(eye2, 0, 60, true, 0.7);
 
-  return [ground];
+  return {
+    ground,
+    stones: [stone],
+  };
 }

@@ -7,15 +7,17 @@ import {
   Vector3,
 } from "@babylonjs/core";
 import { SkyMaterial } from "@babylonjs/materials";
-import { createTexture } from "./textures";
+import { createTexture } from "./textures.js";
 
 export function createMaterial(
   materialName: string,
   scene: Scene,
-  color: Color3
+  color?: Color3
 ) {
   const yellowMat = new PBRMaterial(materialName, scene);
-  yellowMat.emissiveColor = color;
+  if (color) {
+    yellowMat.emissiveColor = color;
+  }
   yellowMat.roughness = 1.0;
   yellowMat.metallic = 0;
   yellowMat.baseWeight = 0.1;
@@ -50,7 +52,7 @@ export function createSkyMaterial(scene: Scene): SkyMaterial {
   skyMaterial.rayleigh = 2; // scattering
   skyMaterial.mieCoefficient = 0.005;
   skyMaterial.inclination = 0.263;
-  skyMaterial.azimuth = 0,25;
+  (skyMaterial.azimuth = 0), 25;
 
   skyMaterial.backFaceCulling = false;
   // Optional: move sun position

@@ -1,2 +1,2 @@
 # Rose
-Squishmallows-peli, koodattu pääosin Babylon.js+TypeScript kombolla.
+Squishmallows-peli, koodattu pääosin Babylon.js+TypeScript kombolla.  

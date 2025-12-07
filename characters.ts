@@ -10,7 +10,7 @@ import {
   TransformNode,
   Vector3,
 } from "@babylonjs/core";
-import { createMaterial } from "./materials";
+import { createMaterial } from "./materials.js";
 import {
   BLACK,
   DARK_BLUE,
@@ -19,10 +19,9 @@ import {
   PINK,
   WING_COLOR,
   YELLOW,
-} from "./colors";
-import { createNiceTexture } from "./textures";
-import { toColor } from "./util";
-import { enableCollisions } from "./core";
+} from "./colors.js";
+import { createNiceTexture } from "./textures.js";
+import PlayerMesh from "./player.mesh.js";
 
 const EYE_LEFT_VECTOR = new Vector3(-0.25, 0.25, 0.8);
 const EYE_RIGHT_VECTOR = new Vector3(0.25, 0.25, 0.8);
@@ -33,46 +32,44 @@ const POSKI_LEFT_VECTOR = new Vector3(0.5, 0.1, 0.8);
 const POSKI_RIGHT_VECTOR = new Vector3(-0.5, 0.1, 0.8);
 const MOUTH_POSITION = new Vector3(0, 0.1, 0.65);
 
-export function createPlayer(scene: Scene, groundMesh: GroundMesh) {
+export function createPlayer(scene: Scene, groundMesh: GroundMesh): PlayerMesh {
   // Mesh
-  const quizmallows = createBody(scene, "quizmallows");
+  const player = createBody(scene, "quizmallows");
   const blackMat = createMaterial("blackMat", scene, BLACK);
   const pinkMat = createMaterial("pinkMat", scene, PINK);
   const positionX = 0.6;
-  quizmallows.addChild(createSarvi(scene, blackMat, positionX, -1));
-  quizmallows.addChild(createSarvi(scene, blackMat, -positionX));
-  quizmallows.addChild(createEye(scene, blackMat, EYE_LEFT_VECTOR));
-  quizmallows.addChild(createEye(scene, blackMat, EYE_RIGHT_VECTOR));
+  player.addChild(createSarvi(scene, blackMat, positionX, -1));
+  player.addChild(createSarvi(scene, blackMat, -positionX));
+  player.addChild(createEye(scene, blackMat, EYE_LEFT_VECTOR));
+  player.addChild(createEye(scene, blackMat, EYE_RIGHT_VECTOR));
   // quizmallows.addChild(createEye(scene, blackMat, -0.25));
-  quizmallows.addChild(createMouth(scene, blackMat));
-  quizmallows.addChild(createPoski(scene, 0.5, pinkMat));
-  quizmallows.addChild(createPoski(scene, -0.5, pinkMat));
+  player.addChild(createMouth(scene, blackMat));
+  player.addChild(createPoski(scene, 0.5, pinkMat));
+  player.addChild(createPoski(scene, -0.5, pinkMat));
 
   const wingMat = createMaterial("wingMat", scene, WING_COLOR);
   const wing1 = createWing(scene, wingMat);
   const wing2 = createWing(scene, wingMat, -1);
-  quizmallows.addChild(wing1);
-  quizmallows.addChild(wing2);
+  player.addChild(wing1);
+  player.addChild(wing2);
 
   const playerMat = createMaterial("playerMat", scene, Color3.Yellow()); // pure yellow (R=1, G=1, B=0)
   playerMat.baseWeight = 0.1;
-  quizmallows.material = playerMat;
+  player.material = playerMat;
 
   const boundingInfo = groundMesh.getBoundingInfo();
-  quizmallows.position.y = 0.6;
-  quizmallows.position.z = boundingInfo.maximum.x - 10;
+  player.position.y = 0.75;
+  player.position.z = boundingInfo.maximum.x - 10;
 
-  quizmallows.position.x = 0;
-  quizmallows.checkCollisions = true;
-  quizmallows.ellipsoid = quizmallows.ellipsoid.scale(0.3);
-  quizmallows.ellipsoidOffset = new Vector3(0, 1, 0);
+  player.position.x = 0;
+  player.checkCollisions = true;
 
   /*
   quizmallows.physicsImpostor = new PhysicsImpostor(quizmallows, PhysicsImpostor.BoxImpostor, {
     mass: 10, restitution: 0.1
   });
   */
-  return quizmallows;
+  return player;
 }
 
 export function createCat(scene: Scene) {

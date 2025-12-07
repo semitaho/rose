@@ -5,7 +5,7 @@ import {
   Color4,
   DirectionalLight,
   Engine,
-  IShadowLight,
+  type IShadowLight,
   Light,
   Mesh,
   MeshBuilder,
@@ -29,20 +29,12 @@ export function createScene(engine: Engine): Scene {
   return scene;
 }
 
-export function enableCollisions(node: Node) {
-  console.log("enabling collisioons", node.name);
-  if (node instanceof Mesh) {
-    node.checkCollisions = true;
-  }
-  if (node.getChildren().length > 0) {
-    node.getChildren().forEach((childMesh: Node) => {
-      enableCollisions(childMesh);
-    });
-  }
-}
-
-export function createCollisionBox(mesh: Mesh, sizeVector: Vector3,  scene: Scene): void {
-    const sizeX =sizeVector.x  *  mesh.scaling.x;
+export function createCollisionBox(
+  mesh: Mesh,
+  sizeVector: Vector3,
+  scene: Scene
+): Mesh {
+  const sizeX = sizeVector.x * mesh.scaling.x;
   const sizeY = sizeVector.y * mesh.scaling.y;
   const sizeZ = sizeVector.z * mesh.scaling.z;
   const collisionBox = MeshBuilder.CreateBox(
@@ -51,19 +43,9 @@ export function createCollisionBox(mesh: Mesh, sizeVector: Vector3,  scene: Scen
     scene
   );
   collisionBox.position = mesh.position.clone();
-  collisionBox.isVisible = false; // invisible
   collisionBox.checkCollisions = true;
-}
-
-function getMeshSize(mesh: Mesh) {
-    const bb = mesh.getBoundingInfo().boundingBox;
-  console.log('bounding info:', bb);
-
-    return new Vector3(
-        (bb.maximum.x - bb.minimum.x),
-        (bb.maximum.y - bb.minimum.y),
-        (bb.maximum.z - bb.minimum.z)
-    );
+  collisionBox.isVisible = false;
+  return collisionBox;
 }
 
 export function enableEllipsoidScale(node: Node, scaleFactor: number) {
