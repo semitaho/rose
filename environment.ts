@@ -9,6 +9,7 @@ import {
   Mesh,
   MeshBuilder,
   Node,
+  PBRMaterial,
   RandomRange,
   Scene,
   StandardMaterial,
@@ -28,9 +29,11 @@ import { flapEyes, flapMouth } from "./animations.js";
 import { createNiceTexture, createTexture } from "./textures.js";
 import { createCollisionBox, enableEllipsoidScale } from "./core.js";
 import {  type Environment } from "./types.js";
+import StoneObject from "./objects/stone.object.js";
+import Stone from "./objects/stone.object.js";
 
 function createSurface(scene: Scene): GroundMesh {
-  const ground = MeshBuilder.CreateGround("ground", { width: 70, height: 70 });
+  const ground = MeshBuilder.CreateGround("ground", { width: 70, height: 270 });
   ground.material = createGrassMaterial(scene);
   ground.receiveShadows = true;
   ground.checkCollisions = false;
@@ -71,7 +74,7 @@ async function createHountedHouse(
   scene: Scene,
   road: Mesh,
   position: Vector3
-): Promise<AbstractMesh> {
+): Promise<Mesh> {
   const roadBoundingBox = road.getBoundingInfo().boundingBox;
   const roadX = roadBoundingBox.minimumWorld.x - 2;
   const result = await ImportMeshAsync("/meshes/haunted_house.glb", scene);
@@ -80,6 +83,7 @@ async function createHountedHouse(
   house.scaling = new Vector3(20, 20, 20);
   house.position = position;
   house.position.x = roadX;
+ 
   createCollisionBox(house as Mesh, new Vector3(0.25, 0.5, 0.3), scene);
 
   return house;
@@ -90,7 +94,7 @@ async function createTree(
   road: Mesh,
   zPos: number,
   yScaling: number
-): Promise<AbstractMesh> {
+): Promise<Mesh> {
   const result = await ImportMeshAsync("/meshes/tree.babylon", scene);
 
   const roadBoundingBox = road.getBoundingInfo().boundingBox;
@@ -112,12 +116,13 @@ function getRoadXLoc(roadMesh: Mesh): number {
 function createRoad(scene: Scene, ground: Mesh): Mesh {
   const boundingBox = ground.getBoundingInfo().boundingBox;
 
+  console.log('z', boundingBox.minimum.z * 2)
   const path = [
     new Vector3(0, 0, 0),
     new Vector3(0, 0, -5),
     new Vector3(0, 0, -10),
     new Vector3(0, 0, -20),
-    new Vector3(0, 0, boundingBox.minimum.x * 2),
+    new Vector3(0, 0, boundingBox.minimum.z * 2),
   ];
 
   const smoothPath = Curve3.CreateCatmullRomSpline(path, 20, false);
@@ -138,7 +143,7 @@ function createRoad(scene: Scene, ground: Mesh): Mesh {
     scene
   );
 
-  const z = boundingBox.maximum.x;
+  const z = boundingBox.maximum.z;
   road.position.z = z;
   road.position.y = 0.1;
   const roadTexture = createTexture("/textures/road.jpg");
@@ -164,40 +169,30 @@ function createRoadCollisions(road: Mesh, scene: Scene): void {
 
 }
 
-export function createStone(scene: Scene, road: Mesh): Mesh {
+export function createStone(scene: Scene, road: Mesh): Stone {
   // Stone (sphere)
-  const stone = MeshBuilder.CreateSphere("stone", { diameter: 1 }, scene);
+  const stone = new Stone("stone", scene);
   stone.position.y = 0.5;
   stone.position.x = getRoadXLoc(road) - 2;
   stone.position.z = -10;
-  const material = createMaterial("stoneMat", scene);
-  const texture = createTexture("/textures/rock.png");
-  texture.uScale = 2;
-  material.albedoTexture = texture;
-  material.metallic = 0;
-  material.baseWeight = 1;
-  //material.bumpTexture.invertZ = true;
-  //material.bumpTexture= texture;
-  //material.roughness = 1.0;
-
-  stone.material = material;
   return stone;
 }
 
 export async function createEnvironmentObjects(scene: Scene): Promise<Environment> {
   const ground = createSurface(scene);
   const road = await createRoad(scene, ground);
-  await createHountedHouse(scene, road, new Vector3(-5, 0, -5));
-  await createHountedHouse(scene, road, new Vector3(10, 0, 10));
+  const house1 = await createHountedHouse(scene, road, new Vector3(-5, 0, -5));
+  const house2 = await createHountedHouse(scene, road, new Vector3(10, 0, 10));
   const stone = createStone(scene, road);
 
   const amountOfTrees = 10;
 
   // trees
+  const trees = []
   for (let num = 1; num < amountOfTrees; num++) {
     let treeAreaZ = -30 + num * 7;
     const yScaling = randomIntFromInterval(15, 20);
-    await createTree(scene, road, treeAreaZ, yScaling);
+    trees.push(await createTree(scene, road, treeAreaZ, yScaling));
   }
   // cat
   const cat = createCat(scene);
@@ -221,5 +216,9 @@ export async function createEnvironmentObjects(scene: Scene): Promise<Environmen
   return {
     ground,
     stones: [stone],
+    trees,
+    houses: [
+      house1, house2
+    ]
   };
 }

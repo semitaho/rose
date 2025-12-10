@@ -17,14 +17,14 @@ import {
   DEEPER_BLUE,
   LIGHT_BLUE,
   PINK,
-  WING_COLOR,
   YELLOW,
 } from "./colors.js";
 import { createNiceTexture } from "./textures.js";
-import PlayerMesh from "./player.mesh.js";
+import PlayerMesh from "./objects/player.object.js";
+import { blink } from "./animations.js";
 
-const EYE_LEFT_VECTOR = new Vector3(-0.25, 0.25, 0.8);
-const EYE_RIGHT_VECTOR = new Vector3(0.25, 0.25, 0.8);
+export const EYE_LEFT_VECTOR = new Vector3(-0.25, 0.25, 0.8);
+export const EYE_RIGHT_VECTOR = new Vector3(0.25, 0.25, 0.8);
 const MOUTH_VECTOR = new Vector3(0, 0.1, 1);
 const SARVI_LEFT_VECTOR = new Vector3(0.6, 0.6, 0);
 const SARVI_RIGHT_VECTOR = new Vector3(-0.6, 0.6, 0);
@@ -34,35 +34,15 @@ const MOUTH_POSITION = new Vector3(0, 0.1, 0.65);
 
 export function createPlayer(scene: Scene, groundMesh: GroundMesh): PlayerMesh {
   // Mesh
-  const player = createBody(scene, "quizmallows");
-  const blackMat = createMaterial("blackMat", scene, BLACK);
-  const pinkMat = createMaterial("pinkMat", scene, PINK);
-  const positionX = 0.6;
-  player.addChild(createSarvi(scene, blackMat, positionX, -1));
-  player.addChild(createSarvi(scene, blackMat, -positionX));
-  player.addChild(createEye(scene, blackMat, EYE_LEFT_VECTOR));
-  player.addChild(createEye(scene, blackMat, EYE_RIGHT_VECTOR));
-  // quizmallows.addChild(createEye(scene, blackMat, -0.25));
-  player.addChild(createMouth(scene, blackMat));
-  player.addChild(createPoski(scene, 0.5, pinkMat));
-  player.addChild(createPoski(scene, -0.5, pinkMat));
-
-  const wingMat = createMaterial("wingMat", scene, WING_COLOR);
-  const wing1 = createWing(scene, wingMat);
-  const wing2 = createWing(scene, wingMat, -1);
-  player.addChild(wing1);
-  player.addChild(wing2);
-
-  const playerMat = createMaterial("playerMat", scene, Color3.Yellow()); // pure yellow (R=1, G=1, B=0)
-  playerMat.baseWeight = 0.1;
-  player.material = playerMat;
+  const player = new PlayerMesh(scene);
 
   const boundingInfo = groundMesh.getBoundingInfo();
-  player.position.y = 0.75;
-  player.position.z = boundingInfo.maximum.x - 10;
+  player.mesh.position.y = 0.75;
+  player.mesh.position.z = boundingInfo.maximum.z - 10;
 
-  player.position.x = 0;
+  player.mesh.position.x = 0;
   player.checkCollisions = true;
+  player.mesh.animations = [blink()];
 
   /*
   quizmallows.physicsImpostor = new PhysicsImpostor(quizmallows, PhysicsImpostor.BoxImpostor, {
@@ -98,7 +78,7 @@ export function createCat(scene: Scene) {
   return quizmallows;
 }
 
-function createWing(scene: Scene, material: Material, direction = 1) {
+export function createWing(scene: Scene, material: Material, direction = 1) {
   const wing1 = MeshBuilder.CreatePlane(
     "wing",
     { width: 0.35, height: 0.7, sideOrientation: Mesh.DOUBLESIDE },
@@ -113,7 +93,7 @@ function createWing(scene: Scene, material: Material, direction = 1) {
   return wing1;
 }
 
-function createMouth(scene: Scene, material: Material) {
+export function createMouth(scene: Scene, material: Material) {
   const path = [];
   const radius = 0.2;
   const deltaTheta = 0.5;
@@ -136,7 +116,7 @@ function createMouth(scene: Scene, material: Material) {
   return arcTube;
 }
 
-function createPoski(scene: Scene, positionX: number, pinkMat: Material) {
+export function createPoski(scene: Scene, positionX: number, pinkMat: Material) {
   const sphere = MeshBuilder.CreateSphere(
     "poski",
     {
@@ -154,7 +134,7 @@ function createPoski(scene: Scene, positionX: number, pinkMat: Material) {
   return sphere;
 }
 
-function createEye(scene: Scene, material: Material, locationVector: Vector3) {
+export function createEye(scene: Scene, material: Material, locationVector: Vector3) {
   const path = [];
   const radius = 0.2;
   const deltaTheta = 0.1;
@@ -178,7 +158,7 @@ function createEye(scene: Scene, material: Material, locationVector: Vector3) {
   return arcTube;
 }
 
-function createSarvi(
+export function createSarvi(
   scene: Scene,
   material: Material,
   positionX: number,
@@ -211,7 +191,7 @@ function createSarvi(
   return ripsiTube;
 }
 
-function createNouseKaari(scene: Scene, material: Material) {
+export function createNouseKaari(scene: Scene, material: Material) {
   const path = [];
   const radius = 0.06;
   const deltaTheta = 0.1;
@@ -265,7 +245,7 @@ function createNouseMouth(scene: Scene, material: Material) {
   return node;
 }
 
-function createBody(scene: Scene, name: string) {
+export function createBody(scene: Scene, name: string) {
   // Mesh
   const quizmallows = MeshBuilder.CreateSphere(
     name,
@@ -280,7 +260,7 @@ function createBody(scene: Scene, name: string) {
   return quizmallows;
 }
 
-function createEar(scene: Scene, direction: number, earColor = LIGHT_BLUE) {
+export function createEar(scene: Scene, direction: number, earColor = LIGHT_BLUE) {
   const earMat = createMaterial("earMat", scene, earColor);
 
   const ear1 = MeshBuilder.CreateSphere(

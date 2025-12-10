@@ -58,6 +58,16 @@ export function enableEllipsoidScale(node: Node, scaleFactor: number) {
     });
   }
 }
+export function toggleVisibility(mesh: Mesh, enabled: boolean) {
+  if (mesh instanceof Mesh) {
+    mesh.setEnabled(enabled);
+  }
+  if (mesh.getChildren().length > 0) {
+    mesh.getChildren().forEach((childMesh: Node) => {
+      toggleVisibility(childMesh as Mesh, enabled);
+    });
+  }
+}
 
 export function createDefaultLight(scene: Scene): Light {
   const light = new DirectionalLight("light", new Vector3(-1, -1, -1), scene);
